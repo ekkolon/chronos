@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "chronos": ["libs/chronos/src/index.ts"]
+      "chronos": ["packages/chronos/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
