@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
-  "dest": "../../dist/libs/chronos",
+  "dest": "../../dist/packages/chronos",
   "lib": {
     "entryFile": "src/index.ts"
   }

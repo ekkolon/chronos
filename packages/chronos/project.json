@@ -1,7 +1,7 @@
 {
   "name": "chronos",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/chronos/src",
+  "sourceRoot": "packages/chronos/src",
   "prefix": "ngx",
   "tags": [],
   "projectType": "library",
@@ -10,14 +10,14 @@
       "executor": "@nx/angular:package",
       "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
       "options": {
-        "project": "libs/chronos/ng-package.json"
+        "project": "packages/chronos/ng-package.json"
       },
       "configurations": {
         "production": {
-          "tsConfig": "libs/chronos/tsconfig.lib.prod.json"
+          "tsConfig": "packages/chronos/tsconfig.lib.prod.json"
         },
         "development": {
-          "tsConfig": "libs/chronos/tsconfig.lib.json"
+          "tsConfig": "packages/chronos/tsconfig.lib.json"
         }
       },
       "defaultConfiguration": "production"
@@ -26,7 +26,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "libs/chronos/jest.config.ts",
+        "jestConfig": "packages/chronos/jest.config.ts",
         "passWithNoTests": true
       },
       "configurations": {
@@ -41,9 +41,9 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": [
-          "libs/chronos/**/*.ts",
-          "libs/chronos/**/*.html",
-          "libs/chronos/package.json"
+          "packages/chronos/**/*.ts",
+          "packages/chronos/**/*.html",
+          "packages/chronos/package.json"
         ]
       }
     }

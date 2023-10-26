@@ -11,7 +11,7 @@ export default {
   displayName: 'chronos',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  coverageDirectory: '../../coverage/libs/chronos',
+  coverageDirectory: '../../coverage/packages/chronos',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',
