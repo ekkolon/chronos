@@ -1,0 +1,136 @@
+/**
+ * @license
+ * Copyright Nelson Dominguez All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at the root of this project.
+ */
+
+import { coerceCssPixelValue } from './coercion';
+
+/**
+ * Ensures a given position value falls within the range [0, distance].
+ *
+ * If the position is greater than the specified distance, it is clamped to the maximum
+ * allowed value (distance). If the position is less than 0, it is clamped to 0.
+ *
+ * @param position - The position value to normalize.
+ * @param distance - The maximum distance value, defining the upper limit.
+ * @returns The clamped position value within the range [0, distance].
+ */
+export function clamp(position: number, distance: number): number {
+  return Math.max(0, Math.min(position, distance));
+}
+
+/**
+ * Defines how a *Chronos* timeline is laid out on a screen.
+ */
+export enum Orientation {
+  Vertical = 'vertical',
+  Horizontal = 'horizontal',
+}
+
+/**
+ * Check whether a value is a valid orientation type.
+ * @param value The value to check.
+ * @returns Whether provided value is a valid orientation type.
+ */
+export const isOrientation = (value: unknown): value is Orientation => {
+  return value === Orientation.Horizontal || value === Orientation.Vertical;
+};
+
+export interface Area2d {
+  x: number;
+  y: number;
+}
+
+/**
+ * Checks if the given value represents a 2D area with valid 'x' and 'y' properties.
+ * @param value - The value to check for a valid 2D area.
+ * @returns `true` if the value is a valid 2D area, `false` otherwise.
+ */
+export const isArea2d = (value: unknown): value is Area2d => {
+  return (
+    value != null &&
+    typeof (value as never)['x'] === 'number' &&
+    typeof (value as never)['y'] === 'number'
+  );
+};
+
+/**
+ * Error class for issues related to orientation.
+ */
+export class OrientationError extends Error {}
+
+/**
+ * Retrieves the main axis position from a 2D point based on the given orientation.
+ * @param point - The 2D point containing 'x' and 'y' coordinates.
+ * @param orientation - The orientation to determine the main axis.
+ * @returns The position along the main axis.
+ * @throws {OrientationError} When an invalid orientation value is provided.
+ * @throws {OrientationError} When an invalid position value is provided.
+ */
+export function getMainAxisPosition(orientation: Orientation, position: number | Area2d): number {
+  if (!isOrientation(orientation)) {
+    throw new OrientationError(
+      `Invalid orientation type '${orientation}'.
+      Must be one of "${Orientation.Horizontal}" | "${Orientation.Vertical}"`
+    );
+  }
+
+  if (isArea2d(position)) {
+    return orientation === Orientation.Horizontal ? position.x : position.y;
+  } else if (Number.isInteger(position)) {
+    return position;
+  } else {
+    throw new OrientationError(
+      `Invalid position value type.
+      Value must be an integer or an object containing x and y coordinates`
+    );
+  }
+}
+
+/**
+ * Represents a 3D translation with optional values for the X, Y, and Z axes.
+ */
+export interface Translate3d extends Partial<Area2d> {
+  z?: number;
+}
+
+/**
+ * Checks if the given object can be considered a 3D translation with valid keys.
+ * @param obj - The object to check for a valid 3D translation.
+ * @returns `true` if the object is a valid 3D translation, `false` otherwise.
+ */
+export function is3DTranslatable(obj: unknown): obj is Translate3d {
+  const validTranslateKeys: (keyof Translate3d)[] = ['x', 'y', 'z'];
+
+  if (obj == null || typeof obj !== 'object') {
+    return false;
+  }
+
+  const translateKeys: string[] = Object.keys(obj);
+
+  if (translateKeys.length === 0) {
+    return false;
+  }
+
+  return translateKeys.every((key) => validTranslateKeys.includes(key as never));
+}
+
+/**
+ * Generates a CSS `translate3d` property value based on a 3D translation object.
+ * @param obj - The 3D translation object to generate the `translate3d` value from.
+ * @returns A valid `translate3d` property value or 'unset' if the translation is invalid.
+ */
+export function generateTranslate3dProperty(obj: unknown): string {
+  if (!is3DTranslatable(obj)) {
+    return 'unset';
+  }
+
+  const x = coerceCssPixelValue(obj.x ?? 0);
+  const y = coerceCssPixelValue(obj.y ?? 0);
+  const z = coerceCssPixelValue(obj.z ?? 0);
+
+  return `translate3d(${x}, ${y}, ${z})`;
+}
