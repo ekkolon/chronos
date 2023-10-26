@@ -1,25 +1,22 @@
 {
   "name": "playground",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "chronos",
-  "sourceRoot": "apps/playground/src",
+  "sourceRoot": "playground/src",
   "tags": [],
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:browser",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/playground",
-        "index": "apps/playground/src/index.html",
-        "main": "apps/playground/src/main.ts",
+        "outputPath": "dist/playground",
+        "index": "playground/src/index.html",
+        "main": "playground/src/main.ts",
         "polyfills": ["zone.js"],
-        "tsConfig": "apps/playground/tsconfig.app.json",
-        "assets": [
-          "apps/playground/src/favicon.ico",
-          "apps/playground/src/assets"
-        ],
-        "styles": ["apps/playground/src/styles.scss"],
+        "tsConfig": "playground/tsconfig.app.json",
+        "assets": ["playground/src/favicon.ico", "playground/src/assets"],
+        "styles": ["playground/src/styles.scss"],
         "scripts": []
       },
       "configurations": {
@@ -71,17 +68,14 @@
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "apps/playground/**/*.ts",
-          "apps/playground/**/*.html"
-        ]
+        "lintFilePatterns": ["playground/**/*.ts", "playground/**/*.html"]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/playground/jest.config.ts",
+        "jestConfig": "playground/jest.config.ts",
         "passWithNoTests": true
       },
       "configurations": {
