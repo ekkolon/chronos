@@ -134,3 +134,54 @@ export function generateTranslate3dProperty(obj: unknown): string {
 
   return `translate3d(${x}, ${y}, ${z})`;
 }
+
+/**
+ * Normalizes the wheel distance based on the browser-specific event properties.
+ *
+ * For Firefox, it uses the event detail property. For other browsers (IE, Safari, Chrome, etc.),
+ * it uses the event wheelDelta property.
+
+ * @param evt - The browser-specific wheel event object.
+ * @returns The normalized wheel distance.
+ */
+export function normalizeWheelDistance(evt: any): number {
+  if (evt.detail) {
+    // Firefox;
+    return -evt.detail / 3;
+  }
+
+  const delta = (evt as never)['wheelDelta'];
+  return delta / 120;
+}
+
+/**
+ * Calculates the relative position within a reference element based on a browser event.
+ * @param evt - The browser event object containing pageX and pageY properties.
+ * @param referenceElement - The reference element to calculate the position relative to.
+ * @returns The relative position as a 2D area (x, y).
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getRelativePosition(evt: any, referenceElement: any): Area2d {
+  const position = {
+    x: evt.pageX,
+    y: evt.pageY,
+  };
+
+  const offset = {
+    left: referenceElement.offsetLeft,
+    top: referenceElement.offsetTop,
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let reference = referenceElement.offsetParent as any;
+  while (reference) {
+    offset.left += reference.offsetLeft;
+    offset.top += reference.offsetTop;
+    reference = reference.offsetParent;
+  }
+
+  const x = position.x - offset.left;
+  const y = position.y - offset.top;
+
+  return { x, y };
+}

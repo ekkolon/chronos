@@ -5,9 +5,11 @@ import {
   clamp,
   generateTranslate3dProperty,
   getMainAxisPosition,
+  getRelativePosition,
   is3DTranslatable,
   isArea2d,
   isOrientation,
+  normalizeWheelDistance,
 } from './position';
 
 describe('utils:position:clamp', () => {
@@ -139,5 +141,51 @@ describe('utils:position:generateTranslate3dProperty', () => {
 
   it('should handle non-object input by returning "unset"', () => {
     expect(generateTranslate3dProperty('not an object')).toBe('unset');
+  });
+});
+
+describe('utils:position:normalizeWheelDistance', () => {
+  it('should normalize wheel distance for Firefox', () => {
+    const firefoxEvent = { detail: 9 };
+    expect(normalizeWheelDistance(firefoxEvent)).toBe(-3);
+  });
+
+  it('should normalize wheel distance for other browsers', () => {
+    const otherBrowserEvent = { wheelDelta: 240 };
+    expect(normalizeWheelDistance(otherBrowserEvent)).toBe(2);
+  });
+
+  it('should return NaN for events without wheel details', () => {
+    const eventWithoutDetails = {};
+    expect(normalizeWheelDistance(eventWithoutDetails)).toBe(NaN);
+  });
+});
+
+describe('utils:position:getRelativePosition', () => {
+  it('should calculate the relative position within the reference element', () => {
+    const event = { pageX: 50, pageY: 60 };
+    const referenceElement = {
+      offsetLeft: 10,
+      offsetTop: 20,
+      offsetParent: {
+        offsetLeft: 5,
+        offsetTop: 15,
+        offsetParent: null,
+      },
+    };
+    const expectedPosition = { x: 35, y: 25 };
+
+    expect(getRelativePosition(event, referenceElement)).toEqual(expectedPosition);
+  });
+
+  it('should handle events without pageX and pageY properties', () => {
+    const event = {};
+    const referenceElement = {
+      offsetLeft: 10,
+      offsetTop: 20,
+    };
+    const expectedPosition = { x: NaN, y: NaN };
+
+    expect(getRelativePosition(event, referenceElement)).toEqual(expectedPosition);
   });
 });
