@@ -9,17 +9,23 @@
 import { coerceCssPixelValue } from './coercion';
 
 /**
- * Ensures a given position value falls within the range [0, distance].
+ * Ensures a given position value falls within the range [offsetStart, maxDistance - offsetEnd].
  *
- * If the position is greater than the specified distance, it is clamped to the maximum
- * allowed value (distance). If the position is less than 0, it is clamped to 0.
+ * If the position is outside this range, it is clamped to the nearest valid boundary.
  *
  * @param position - The position value to normalize.
- * @param distance - The maximum distance value, defining the upper limit.
- * @returns The clamped position value within the range [0, distance].
+ * @param totalDistance - The total line length.
+ * @param offsetStart - The offset value at the start of the range.
+ * @param offsetEnd - The offset value at the end of the range.
+ * @returns The clamped position value within the specified range.
  */
-export function clamp(position: number, distance: number): number {
-  return Math.max(0, Math.min(position, distance));
+export function clamp(
+  position: number,
+  totalDistance: number,
+  offsetStart: number,
+  offsetEnd: number
+): number {
+  return Math.min(Math.max(position, offsetStart), totalDistance - offsetEnd);
 }
 
 /**
