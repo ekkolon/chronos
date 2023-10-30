@@ -1,0 +1,35 @@
+<div class="chron-timeline-viewport" chronViewport>
+  <div class="chron-timeline-records">
+    <ng-container *ngFor="let segment of layout?.segments">
+      <div class="chron-timeline-record" [style.transform]="segment.startMonth.transform">
+        <div class="date">{{ segment.startMonth.timestamp | date:"yyyy" }}</div>
+      </div>
+      <div
+        *ngFor="let record of segment.records"
+        class="chron-timeline-record"
+        [style.transform]="record.transform"
+      >
+        <div class="point">
+          <div class="point-tracker"></div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <chron-timeline-cursor-trackbar
+    *ngIf="isCursorVisible()"
+    [orientation]="orientation"
+    [position]="cursorTrackbarPosition()"
+  ></chron-timeline-cursor-trackbar>
+
+  <chron-timeline-position-indicator
+    [orientation]="orientation"
+    [position]="currentPosition()"
+  ></chron-timeline-position-indicator>
+
+  <chron-timeline-label
+    [orientation]="orientation"
+    [position]="labelPosition()"
+    [displayText]="labelDisplayText() | date: 'MMM y'"
+  ></chron-timeline-label>
+</div>

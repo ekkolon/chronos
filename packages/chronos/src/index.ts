@@ -7,5 +7,5 @@
  */
 
 export * from './lib/idle-observer';
+export * from './lib/timeline';
 export * from './lib/timeline-config';
-
