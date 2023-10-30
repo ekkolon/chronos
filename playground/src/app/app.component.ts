@@ -6,16 +6,25 @@
  * found in the LICENSE file at the root of this project.
  */
 
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Component, signal } from '@angular/core';
+
+import { NgxChronosTimeline, provideTimelineConfig } from 'chronos';
+
+import { chronTimelineRecords } from './mocks/timeline-records';
 
 @Component({
   standalone: true,
-  imports: [RouterModule],
+  imports: [CommonModule, NgxChronosTimeline],
   selector: 'chronos-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  providers: [provideTimelineConfig()],
 })
 export class AppComponent {
   title = 'chronos';
+
+  readonly timelinePosition = signal<number>(0);
+
+  readonly timelineRecords = signal(chronTimelineRecords);
 }
