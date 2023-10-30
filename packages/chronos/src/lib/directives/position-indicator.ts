@@ -8,7 +8,7 @@
 
 import { Directive } from '@angular/core';
 
-import { PositionableElement } from '../../directives/positionable-element';
+import { PositionableElement } from './positionable-element';
 
 /**
  * A directive representing a position indicator element within a Chronos timeline.

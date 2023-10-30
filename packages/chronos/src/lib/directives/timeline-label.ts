@@ -8,7 +8,7 @@
 
 import { Component, Input } from '@angular/core';
 
-import { PositionableElement } from '../../directives/positionable-element';
+import { PositionableElement } from './positionable-element';
 
 /**
  * A component representing a label element within a Chronos timeline.
