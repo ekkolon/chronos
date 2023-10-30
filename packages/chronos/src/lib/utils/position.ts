@@ -80,7 +80,7 @@ export function getMainAxisPosition(orientation: Orientation, position: number |
 
   if (isArea2d(position)) {
     return orientation === Orientation.Horizontal ? position.x : position.y;
-  } else if (Number.isInteger(position)) {
+  } else if (typeof position === 'number') {
     return position;
   } else {
     throw new OrientationError(
