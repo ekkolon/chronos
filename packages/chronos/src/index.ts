@@ -9,3 +9,9 @@
 export * from './lib/idle-observer';
 export * from './lib/timeline';
 export * from './lib/timeline-config';
+export {
+  TimelineLayoutConfig,
+  TimelineSegment,
+  TimelineSegmentBase,
+  Timestamp,
+} from './lib/timeline-layout';
