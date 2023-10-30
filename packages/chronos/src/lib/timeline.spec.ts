@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgxChronosTimeline } from './timeline';
+import { provideTimelineConfig } from './timeline-config';
 
 describe('NgxChronosTimeline', () => {
   let component: NgxChronosTimeline;
@@ -8,10 +9,12 @@ describe('NgxChronosTimeline', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NgxChronosTimeline],
+      providers: [provideTimelineConfig()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NgxChronosTimeline);
     component = fixture.componentInstance;
+    component.records = [];
     fixture.detectChanges();
   });
 
