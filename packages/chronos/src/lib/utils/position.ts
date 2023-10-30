@@ -142,6 +142,24 @@ export function generateTranslate3dProperty(obj: unknown): string {
 }
 
 /**
+ * Generates a `translate3d` property value for a specified orientation and position.
+ *
+ * This function calculates the `translate3d` property value based on the orientation (horizontal or vertical)
+ * and the provided position value. It returns a CSS `translate3d` property that translates along the main axis.
+ *
+ * @param orientation - The orientation, either `Orientation.Horizontal` or `Orientation.Vertical`.
+ * @param value - The position or Area2d object to determine the translation value.
+ * @returns A CSS `translate3d` property value suitable for applying transformations.
+ */
+export function getTranslate3d(orientation: Orientation, value: Area2d | number) {
+  const mainAxisPosition = getMainAxisPosition(orientation, value);
+
+  return orientation === Orientation.Horizontal
+    ? generateTranslate3dProperty({ x: mainAxisPosition })
+    : generateTranslate3dProperty({ y: mainAxisPosition });
+}
+
+/**
  * Normalizes the wheel distance based on the browser-specific event properties.
  *
  * For Firefox, it uses the event detail property. For other browsers (IE, Safari, Chrome, etc.),
