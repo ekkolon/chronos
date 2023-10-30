@@ -12,25 +12,28 @@ import {
   normalizeWheelDistance,
 } from './position';
 
+/**
+ * TODO: Test clamp with offsets
+ */
 describe('utils:position:clamp', () => {
   it('should return 0 if position is negative', () => {
-    expect(clamp(-5, 10)).toBe(0);
+    expect(clamp(-5, 10, 0, 0)).toBe(0);
   });
 
   it('should return the position if it is within the distance range', () => {
-    expect(clamp(5, 10)).toBe(5);
+    expect(clamp(5, 10, 0, 0)).toBe(5);
   });
 
   it('should return the distance if position is greater than distance', () => {
-    expect(clamp(15, 10)).toBe(10);
+    expect(clamp(15, 10, 0, 0)).toBe(10);
   });
 
   it('should handle position equal to 0', () => {
-    expect(clamp(0, 10)).toBe(0);
+    expect(clamp(0, 10, 0, 0)).toBe(0);
   });
 
   it('should handle position equal to the distance', () => {
-    expect(clamp(10, 10)).toBe(10);
+    expect(clamp(10, 10, 0, 0)).toBe(10);
   });
 });
 
@@ -175,7 +178,9 @@ describe('utils:position:getRelativePosition', () => {
     };
     const expectedPosition = { x: 35, y: 25 };
 
-    expect(getRelativePosition(event, referenceElement)).toEqual(expectedPosition);
+    expect(getRelativePosition(event as never, referenceElement as never)).toEqual(
+      expectedPosition
+    );
   });
 
   it('should handle events without pageX and pageY properties', () => {
@@ -186,6 +191,8 @@ describe('utils:position:getRelativePosition', () => {
     };
     const expectedPosition = { x: NaN, y: NaN };
 
-    expect(getRelativePosition(event, referenceElement)).toEqual(expectedPosition);
+    expect(getRelativePosition(event as never, referenceElement as never)).toEqual(
+      expectedPosition
+    );
   });
 });
