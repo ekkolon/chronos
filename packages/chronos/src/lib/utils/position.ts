@@ -157,27 +157,27 @@ export function normalizeWheelDistance(evt: any): number {
 /**
  * Calculates the relative position within a reference element based on a browser event.
  * @param evt - The browser event object containing pageX and pageY properties.
- * @param referenceElement - The reference element to calculate the position relative to.
+ * @param target - The reference element to calculate the position relative to.
  * @returns The relative position as a 2D area (x, y).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getRelativePosition(evt: any, referenceElement: any): Area2d {
+export function getRelativePosition(evt: PointerEvent | MouseEvent, target: HTMLElement): Area2d {
   const position = {
     x: evt.pageX,
     y: evt.pageY,
   };
 
   const offset = {
-    left: referenceElement.offsetLeft,
-    top: referenceElement.offsetTop,
+    left: target.offsetLeft,
+    top: target.offsetTop,
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let reference = referenceElement.offsetParent as any;
+  let reference = target.offsetParent as HTMLElement;
   while (reference) {
     offset.left += reference.offsetLeft;
     offset.top += reference.offsetTop;
-    reference = reference.offsetParent;
+    reference = reference.offsetParent as HTMLElement;
   }
 
   const x = position.x - offset.left;
