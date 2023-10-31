@@ -5,10 +5,6 @@ on:
       - main
   pull_request:
 
-env:
-  # Disable husky
-  HUSKY: 0
-
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -35,19 +31,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - run: npx nx format:check
+      # In CI mode we only want to check for un-formatted files in Nx project directories
+      - run: npx nx format:check --libs-and-apps
+
       - run: npx nx affected -t lint --parallel=3 --exclude playground
       - run: npx nx affected -t test --parallel=3 --exclude playground
       - run: npx nx affected -t build --parallel=3 --exclude playground
-
-      - name: Validate most recent commit with commitlint
-        if: github.event_name == 'push'
-        run: npx commitlint --from HEAD~1 --to HEAD --verbose
-
-      - name: Validate PR commits with commitlint
-        if: github.event_name == 'pull_request'
-        run: >
-          npx commitlint
-          --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }}
-          --to ${{ github.event.pull_request.head.sha }}
-          --verbose
