@@ -2,21 +2,21 @@ import { TestBed, inject } from '@angular/core/testing';
 
 import { of } from 'rxjs';
 
-import { IdleObserver } from './idle-observer';
-import { provideIdleObserverConfig } from './idle-observer.config';
+import { IdleManager } from './idle-manager';
+import { provideIdleManager } from './idle-manager.config';
 
 describe('Service: IdleTime', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [IdleObserver, provideIdleObserverConfig()],
+      providers: [provideIdleManager()],
     });
   });
 
-  it('should create the service', inject([IdleObserver], (service: IdleObserver) => {
+  it('should create the service', inject([IdleManager], (service: IdleManager) => {
     expect(service).toBeTruthy();
   }));
 
-  it('should start monitoring user activity', inject([IdleObserver], (service: IdleObserver) => {
+  it('should start monitoring user activity', inject([IdleManager], (service: IdleManager) => {
     const getEventListenerSpy = jest
       .spyOn(service as never, 'getActivityEvents')
       .mockReturnValue(of() as never);
@@ -29,7 +29,7 @@ describe('Service: IdleTime', () => {
     expect(getEventListenerSpy).toHaveBeenCalled();
   }));
 
-  it('should reset the inactivity timer', inject([IdleObserver], (service: IdleObserver) => {
+  it('should reset the inactivity timer', inject([IdleManager], (service: IdleManager) => {
     // Set up initial timer value
     service['inactivityTimer'] = setTimeout(() => ({}), 1000);
     service['resetInactivityTimer']();
@@ -38,7 +38,7 @@ describe('Service: IdleTime', () => {
     expect(service['inactivityTimer']).toBeUndefined();
   }));
 
-  it('should toggle user activity state', inject([IdleObserver], (service: IdleObserver) => {
+  it('should toggle user activity state', inject([IdleManager], (service: IdleManager) => {
     service['toggleIdleState'](false);
     service['toggleIdleState'](true);
 

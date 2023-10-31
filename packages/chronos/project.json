@@ -43,7 +43,9 @@
         "lintFilePatterns": [
           "packages/chronos/**/*.ts",
           "packages/chronos/**/*.html",
-          "packages/chronos/package.json"
+          "packages/chronos/package.json",
+          "packages/chronos/idle-manager/**/*.ts",
+          "packages/chronos/idle-manager/**/*.html"
         ]
       }
     }

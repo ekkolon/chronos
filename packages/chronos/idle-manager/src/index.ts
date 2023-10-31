@@ -6,6 +6,5 @@
  * found in the LICENSE file at the root of this project.
  */
 
-export * from './idle-observer';
-export * from './idle-observer.config';
-export * from './idle-observer.module';
+export * from './lib/idle-manager';
+export * from './lib/idle-manager.config';

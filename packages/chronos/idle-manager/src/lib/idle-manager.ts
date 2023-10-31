@@ -10,26 +10,30 @@ import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   EventEmitter,
   Injectable,
+  Injector,
   NgZone,
   PLATFORM_ID,
   computed,
   inject,
+  runInInjectionContext,
   signal,
 } from '@angular/core';
-
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, fromEvent, merge, takeWhile, tap } from 'rxjs';
 
-import { IDLE_OBSERVER_CONFIG } from './idle-observer.config';
+import { IDLE_MANAGER_CONFIG } from './idle-manager.config';
 
 /**
  * Provides functionality for tracking and managing user idle time.
  */
 @Injectable()
-export class IdleObserver {
+export class IdleManager {
   private readonly ngZone = inject(NgZone);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly doc = inject(DOCUMENT);
-  private readonly config = inject(IDLE_OBSERVER_CONFIG);
+  private readonly injector = inject(Injector);
+
+  private readonly config = inject(IDLE_MANAGER_CONFIG);
 
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
@@ -66,17 +70,20 @@ export class IdleObserver {
    * on or off based on those interactions.
    */
   observe(): void {
-    this.getActivityEvents()
-      .pipe(
-        takeWhile(() => this.isBrowser),
-        tap(() => {
-          this.restartInactivityTimer();
+    runInInjectionContext(this.injector, () => {
+      this.getActivityEvents()
+        .pipe(
+          takeWhile(() => this.isBrowser),
+          tap(() => {
+            this.restartInactivityTimer();
 
-          // User is active
-          this.toggleIdleState(false);
-        })
-      )
-      .subscribe();
+            // User is active
+            this.toggleIdleState(false);
+          }),
+          takeUntilDestroyed()
+        )
+        .subscribe();
+    });
 
     // Start the initial inactivity timer
     this.startInactivityTimer();
@@ -92,22 +99,26 @@ export class IdleObserver {
 
   // Start the inactivity timer
   private startInactivityTimer(): void {
-    this.inactivityTimer = setTimeout(() => {
-      this.ngZone.run(() => {
-        this.resetInactivityTimer();
+    this.ngZone.runOutsideAngular(() => {
+      this.inactivityTimer = setTimeout(() => {
+        this.ngZone.run(() => {
+          this.resetInactivityTimer();
 
-        this.onIdle.emit();
+          this.onIdle.emit();
 
-        // User is inactive
-        this.toggleIdleState(true);
-      });
-    }, this.config.inactiveAfterMs);
+          // User is inactive
+          this.toggleIdleState(true);
+        });
+      }, this.config.inactiveAfterMs);
+    });
   }
 
   // Reset the inactivity timer
   private resetInactivityTimer(): void {
-    clearTimeout(this.inactivityTimer);
-    this.inactivityTimer = undefined;
+    this.ngZone.runOutsideAngular(() => {
+      clearTimeout(this.inactivityTimer);
+      this.inactivityTimer = undefined;
+    });
   }
 
   // Toggle user activity state
