@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - run: npx nx format:check
+      - run: npx nx format:check --verbose
       - run: npx nx affected -t lint --parallel=3 --exclude playground
       - run: npx nx affected -t test --parallel=3 --exclude playground
       - run: npx nx affected -t build --parallel=3 --exclude playground
