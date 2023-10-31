@@ -1,7 +1,7 @@
 /* eslint-disable */
 export default {
   displayName: 'playground',
-  preset: '../jest.preset.ts',
+  preset: '../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   coverageDirectory: '../coverage/playground',
   transform: {
