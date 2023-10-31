@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { Component, signal } from '@angular/core';
 
 import { NgxChronosTimeline, provideTimelineConfig } from 'chronos';
+import { provideIdleManager } from 'chronos/idle-manager';
 
 import { chronTimelineRecords } from './mocks/timeline-records';
 
@@ -19,7 +20,7 @@ import { chronTimelineRecords } from './mocks/timeline-records';
   selector: 'chronos-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  providers: [provideTimelineConfig()],
+  providers: [provideTimelineConfig(), provideIdleManager()],
 })
 export class AppComponent {
   title = 'chronos';

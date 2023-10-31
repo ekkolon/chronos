@@ -6,7 +6,6 @@
  * found in the LICENSE file at the root of this project.
  */
 
-export * from './lib/idle-observer';
 export * from './lib/timeline';
 export * from './lib/timeline-config';
 export {

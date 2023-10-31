@@ -12,6 +12,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostBinding,
   Injector,
   Input,
   OnDestroy,
@@ -28,11 +29,12 @@ import {
 
 import { merge, tap } from 'rxjs';
 
+import { IdleManager } from 'chronos/idle-manager';
+
 import { ChronTimelineCursorTrackbar } from './directives/cursor-trackbar';
 import { ChronTimelinePositionIndicator } from './directives/position-indicator';
 import { ChronTimelineLabel } from './directives/timeline-label';
 import { ChronTimelineViewport } from './directives/viewport';
-import { IdleObserver, IdleObserverModule } from './idle-observer';
 import { InteractionManager } from './interaction-manager';
 import { ChronTimelineConfig } from './timeline-config';
 import { TimelineLayout, TimelineSegmentBase, Timestamp } from './timeline-layout';
@@ -46,7 +48,6 @@ import { Orientation } from './utils/position';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    IdleObserverModule,
     ChronTimelinePositionIndicator,
     ChronTimelineCursorTrackbar,
     ChronTimelineLabel,
@@ -63,13 +64,17 @@ import { Orientation } from './utils/position';
     '[attr.aria-label]': 'this.ariaLabel()',
     '[attr.aria-orientation]': 'this.orientation',
     '[attr.orientation]': 'this.orientation',
-    '[attr.idle]': 'this.idle.isIdle()',
   },
 })
 export class NgxChronosTimeline implements OnInit, OnDestroy {
   private readonly injector = inject(Injector);
   private readonly elementRef = inject(ElementRef) as ElementRef<HTMLElement>;
-  private readonly idle = inject(IdleObserver);
+
+  private readonly idle = inject<IdleManager | null>(IdleManager, {
+    optional: true,
+    skipSelf: true,
+  });
+
   private readonly config = inject(ChronTimelineConfig);
 
   private readonly lineSegment = signal(0);
@@ -145,6 +150,11 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
   @ViewChild(ChronTimelineViewport, { static: true })
   private readonly viewport!: ChronTimelineViewport;
 
+  @HostBinding('class.is-idle')
+  get isIdle() {
+    return this.idle?.isIdle();
+  }
+
   get orientation() {
     return this.config.orientation;
   }
@@ -201,7 +211,7 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
     });
 
     // Observe idle changes
-    this.idle.observe();
+    this.idle?.observe();
 
     // Update cursor trackbar visibility based on mousevents
     const cursorVisibility$ = merge(

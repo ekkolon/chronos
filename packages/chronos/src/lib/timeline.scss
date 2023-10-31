@@ -9,7 +9,7 @@
 
   &:hover,
   &:focus,
-  &[idle='false'] {
+  &:not(.is-idle) {
     cursor: row-resize;
 
     .chron-timeline-viewport {

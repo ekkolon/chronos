@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "chronos": ["packages/chronos/src/index.ts"]
+      "chronos": ["packages/chronos/src/index.ts"],
+      "chronos/idle-manager": ["packages/chronos/idle-manager/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
