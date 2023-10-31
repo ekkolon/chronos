@@ -8,7 +8,9 @@
     "node": ">=18"
   },
   "packageManager": "pnpm@8.9.2",
-  "scripts": {},
+  "scripts": {
+    "prepare": "husky install"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "~16.2.0",
