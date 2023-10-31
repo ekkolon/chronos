@@ -6,7 +6,7 @@
  * found in the LICENSE file at the root of this project.
  */
 
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -71,7 +71,6 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
   private readonly elementRef = inject(ElementRef) as ElementRef<HTMLElement>;
   private readonly idle = inject(IdleObserver);
   private readonly config = inject(ChronTimelineConfig);
-  private readonly datePipe = new DatePipe('en');
 
   private readonly lineSegment = signal(0);
 
@@ -195,7 +194,10 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
         return label?.timestamp;
       });
 
-      this.ariaLabel = computed(() => this.datePipe.transform(this.labelDisplayText(), 'MMMM y'));
+      this.ariaLabel = computed(() => {
+        const label = this.labelDisplayText();
+        return label ? formatDate(label, 'MMMM y', 'en') : null;
+      });
     });
 
     // Observe idle changes
