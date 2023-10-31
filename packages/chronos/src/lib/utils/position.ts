@@ -168,7 +168,7 @@ export function getTranslate3d(orientation: Orientation, value: Area2d | number)
  * @param evt - The browser-specific wheel event object.
  * @returns The normalized wheel distance.
  */
-export function normalizeWheelDistance(evt: any): number {
+export function normalizeWheelDistance(evt: WheelEvent): number {
   if (evt.detail) {
     // Firefox;
     return -evt.detail / 3;
