@@ -31,7 +31,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - run: npx nx format:check
+      # In CI mode we only want to check for un-formatted files in Nx project directories
+      - run: npx nx format:check --libs-and-apps
+
       - run: npx nx affected -t lint --parallel=3 --exclude playground
       - run: npx nx affected -t test --parallel=3 --exclude playground
       - run: npx nx affected -t build --parallel=3 --exclude playground
