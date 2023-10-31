@@ -31,7 +31,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      # In CI mode we only want to check for un-formatted files in Nx project directories
+      # The following job would fail without the `--libs-and-apps` flag.
+      # We currently don't auto-format this file after it has changed
+      # and therefore using the flag works around that issue by limiting
+      # the directories being checked to nx project directories only.
       - run: npx nx format:check --libs-and-apps
 
       - run: npx nx affected -t lint --parallel=3 --exclude playground
