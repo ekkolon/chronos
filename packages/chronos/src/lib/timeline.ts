@@ -6,7 +6,7 @@
  * found in the LICENSE file at the root of this project.
  */
 
-import { CommonModule, formatDate } from '@angular/common';
+import { DatePipe, NgFor, NgIf, formatDate } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -47,7 +47,11 @@ import { Orientation } from './utils/position';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
+    NgIf,
+    NgFor,
+    DatePipe,
+
+    // Internal imports
     ChronTimelinePositionIndicator,
     ChronTimelineCursorTrackbar,
     ChronTimelineLabel,
