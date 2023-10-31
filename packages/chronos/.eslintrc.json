@@ -36,7 +36,19 @@
       "files": ["*.json"],
       "parser": "jsonc-eslint-parser",
       "rules": {
-        "@nx/dependency-checks": "error"
+        // We ignore `tslib` dependency here as a workaround for a lint error
+        // thrown when running the `nx lint` command.
+        //
+        // tslib is required for building Angular libraries and when the `importHelpers`
+        // flag is set to true in the tsconfig.json file.
+        //
+        // See: https://github.com/nrwl/nx/issues/18033
+        "@nx/dependency-checks": [
+          "error",
+          {
+            "ignoredDependencies": ["tslib"]
+          }
+        ]
       }
     }
   ]
