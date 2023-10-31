@@ -5,6 +5,10 @@ on:
       - main
   pull_request:
 
+env:
+  # Disable husky
+  HUSKY: 0
+
 jobs:
   main:
     runs-on: ubuntu-latest
