@@ -15,11 +15,12 @@ import { animationFrameScheduledEvent } from './utils/events';
 import { round } from './utils/math';
 import {
   Area2d,
+  DirectionOfTravel,
   Orientation,
   clamp,
+  getDirectionOfTravelFromWheel,
   getMainAxisPosition,
   getRelativePosition,
-  normalizeWheelDistance,
 } from './utils/position';
 
 /**
@@ -230,15 +231,13 @@ export class InteractionManager {
   };
 
   private readonly onWheel = (evt: WheelEvent): void => {
-    if (!this.canMoveWheel(evt)) {
-      return;
+    const direction = getDirectionOfTravelFromWheel(evt);
+
+    if (this.isWithinBounds(direction)) {
+      const posPercentage = this._position() / this.lineSegment;
+      const newPosPercentage = posPercentage - direction / 100;
+      this.moveByFraction(newPosPercentage);
     }
-
-    const wheelDistance = normalizeWheelDistance(evt);
-    const currPosPct = this._position() / this.lineSegment;
-    const newPosPct = currPosPct - wheelDistance / 100;
-
-    this.moveByFraction(newPosPct);
   };
 
   private readonly onMousemove = (evt: MouseEvent): void => {
@@ -266,12 +265,11 @@ export class InteractionManager {
     this._cursorPos.set(this.clamp(point));
   }
 
-  private canMoveWheel(evt: WheelEvent) {
+  private isWithinBounds(directionOfTravel: DirectionOfTravel) {
     const pos = this._position();
-    const wheelDistance = normalizeWheelDistance(evt);
-
-    const canMoveBackwards = wheelDistance > 0 && pos > this.lowerBound;
-    const canMoveForward = wheelDistance < 0 && pos < this.upperBound;
+    const canMoveBackwards =
+      directionOfTravel === DirectionOfTravel.Forward && pos > this.lowerBound;
+    const canMoveForward = DirectionOfTravel.Backwards && pos < this.upperBound;
 
     return canMoveForward || canMoveBackwards;
   }
