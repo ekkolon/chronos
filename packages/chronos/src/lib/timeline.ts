@@ -64,7 +64,7 @@ import { Orientation } from './utils/position';
     tabindex: '0',
     'aria-valuemin': '0',
     'aria-valuemax': '1',
-    '[attr.aria-valuenow]': 'this.currentPositionPct()',
+    '[attr.aria-valuenow]': 'this.interactionManager?.positionPct()',
     '[attr.aria-label]': 'this.ariaLabel()',
     '[attr.aria-orientation]': 'this.orientation',
     '[attr.orientation]': 'this.orientation',
