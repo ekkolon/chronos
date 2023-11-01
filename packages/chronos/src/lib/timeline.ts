@@ -99,11 +99,6 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
   currentPosition!: Signal<number>;
 
   /**
-   * The current position within the timeline as a percentage value (0% to 100%).
-   */
-  currentPositionPct!: Signal<number>;
-
-  /**
    * A signal that indicates whether the cursor is visible on the timeline.
    */
   isCursorVisible = signal(true);
@@ -195,8 +190,6 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
         const pos = this.interactionManager.cursorPos();
         return this.calcFinalPos(pos);
       });
-
-      this.currentPositionPct = computed(() => this.currentPosition() / this.lineSegment());
 
       this.labelPosition = computed(() => {
         return this.isCursorVisible() ? this.cursorTrackbarPosition() : this.currentPosition();
