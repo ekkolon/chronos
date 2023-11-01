@@ -64,7 +64,7 @@ import { Orientation } from './utils/position';
     tabindex: '0',
     'aria-valuemin': '0',
     'aria-valuemax': '1',
-    '[attr.aria-valuenow]': 'this.currentPositionPct()',
+    '[attr.aria-valuenow]': 'this.interactionManager?.positionPct()',
     '[attr.aria-label]': 'this.ariaLabel()',
     '[attr.aria-orientation]': 'this.orientation',
     '[attr.orientation]': 'this.orientation',
@@ -163,6 +163,11 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
     return this.config.orientation;
   }
 
+  // TODO: Maybe use input bindings?
+  // TODO: Determine style bindings based on timeline orientation
+  layoutStartOffset = 24;
+  layoutEndOffset = 24;
+
   ngOnInit() {
     // Compute and update line segment
     this.updateLineSegment();
@@ -175,7 +180,7 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
     });
 
     this.layout = new TimelineLayout({
-      maxSpaceAvailable: this.lineSegment(),
+      maxSpaceAvailable: this.calcLayoutLineSegment(),
       orientation: this.config.orientation,
       segments: this.records,
     });
@@ -246,7 +251,12 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
   }
 
   private calcFinalPos(pos: number) {
-    const offsets = this.config.offsetStart + this.config.offsetEnd;
-    return pos - offsets / 2;
+    const itemsContainerOffsets = this.layoutStartOffset + this.layoutEndOffset;
+    return pos - itemsContainerOffsets / 2;
+  }
+
+  private calcLayoutLineSegment() {
+    const itemsContainerOffsets = this.layoutStartOffset + this.layoutEndOffset;
+    return this.calcLineSegment() - itemsContainerOffsets;
   }
 }

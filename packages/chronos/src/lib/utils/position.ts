@@ -160,6 +160,21 @@ export function getTranslate3d(orientation: Orientation, value: Area2d | number)
 }
 
 /**
+ * The direction of travel in timeline.
+ */
+export enum DirectionOfTravel {
+  /**
+   * Represents the backward direction of travel with a numeric value of -1.
+   */
+  Backwards = -1,
+
+  /**
+   * Represents the forward direction of travel with a numeric value of 1.
+   */
+  Forward = 1,
+}
+
+/**
  * Normalizes the wheel distance based on the browser-specific event properties.
  *
  * For Firefox, it uses the event detail property. For other browsers (IE, Safari, Chrome, etc.),
@@ -168,7 +183,7 @@ export function getTranslate3d(orientation: Orientation, value: Area2d | number)
  * @param evt - The browser-specific wheel event object.
  * @returns The normalized wheel distance.
  */
-export function normalizeWheelDistance(evt: WheelEvent): number {
+export function getDirectionOfTravelFromWheel(evt: WheelEvent): DirectionOfTravel {
   if (evt.detail) {
     // Firefox;
     return -evt.detail / 3;

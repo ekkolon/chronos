@@ -6,20 +6,20 @@
  * found in the LICENSE file at the root of this project.
  */
 
-import { computed, signal } from '@angular/core';
+import { EventEmitter, computed, signal } from '@angular/core';
 
 import { Observable, Subject, fromEvent, merge, mergeMap, repeat, takeUntil, tap } from 'rxjs';
 
 import { ElementOrRef, coerceElement } from './utils/coercion';
 import { animationFrameScheduledEvent } from './utils/events';
-import { round } from './utils/math';
 import {
   Area2d,
+  DirectionOfTravel,
   Orientation,
   clamp,
+  getDirectionOfTravelFromWheel,
   getMainAxisPosition,
   getRelativePosition,
-  normalizeWheelDistance,
 } from './utils/position';
 
 /**
@@ -53,6 +53,12 @@ export interface InteractionManagerUpdateConfig extends InteractionManagerGeomet
   distance?: number;
 }
 
+// Available distance units for moving along the main axis within a timeline.
+enum DistanceUnit {
+  Percentage,
+  Pixel,
+}
+
 /**
  * Manages interactions within a Chronos `Timeline` container and viewport.
  */
@@ -69,6 +75,12 @@ export class InteractionManager {
 
   /** A computed property that provides read-only access to the current position state. */
   readonly position = computed(() => this.clamp(this._position()));
+
+  /** A computed property that provides read-only access to the current position state. */
+  readonly positionPct = computed(() => this.calcRelativeFraction(this._position()));
+
+  /** A computed property that provides read-only access to the current position state. */
+  readonly positionChanged = new EventEmitter<number>();
 
   /** A signal that holds the movement detector's current trackbar position in pixels. */
   private readonly _cursorPos = signal<number>(0);
@@ -185,6 +197,15 @@ export class InteractionManager {
     return this.config.offsetStart;
   }
 
+  get totalOffset() {
+    const { offsetEnd, offsetStart } = this.config;
+    return offsetStart + offsetEnd;
+  }
+
+  get maxSpaceAvailable() {
+    return this.lineSegment - this.totalOffset;
+  }
+
   /**
    * Starts detecting movements based on configured observables.
    */
@@ -200,26 +221,53 @@ export class InteractionManager {
       .subscribe();
   }
 
-  moveByFraction(fraction: number) {
-    const rounded = round(this.config.distance * fraction, 2);
-    const pos = this.clamp(rounded);
-    this._position.set(pos);
+  moveByFraction(distance: number): void {
+    this.updatePositionByDistanceUnit(DistanceUnit.Percentage, distance);
   }
 
-  moveByPixels(positionInPixels: number) {
-    const pos = this.clamp(positionInPixels);
-    this._position.set(pos);
+  moveByPixels(distance: number): void {
+    this.updatePositionByDistanceUnit(DistanceUnit.Pixel, distance);
   }
 
-  updateConfig(config: InteractionManagerUpdateConfig) {
+  updateConfig(config: InteractionManagerUpdateConfig): void {
     this.config = {
       ...this.config,
       ...config,
     };
   }
 
-  detach() {
+  detach(): void {
     this.destroyed.next();
+  }
+
+  private updatePositionByDistanceUnit(unit: DistanceUnit, distance: number) {
+    let distanceInPixels: number;
+
+    if (unit === DistanceUnit.Percentage) {
+      distanceInPixels = this.lineSegment * distance;
+    } else if (unit === DistanceUnit.Pixel) {
+      distanceInPixels = distance;
+    } else {
+      throw new Error(`Invalid distance unit "${unit}"`);
+    }
+
+    // We clamp the position here based on the assumption that
+    // `InteractionManager.moveByFraction` or `InteractionManager.moveByPixels`
+    // may be called independently of any DOM event subscribed to by this class.
+    //
+    // For instance, a parent component might manually call this method
+    // to move to a specific position on the screen and if we relied on
+    // the caller to provide a clamped position (that is, a position value that
+    // accounts for offset values to calculate the `this.maxSpaceAvailable`)
+    // we would inaccurately calculate layout geometries.
+    const finalPosition = this.clamp(distanceInPixels);
+
+    this._position.set(finalPosition);
+  }
+
+  private calcRelativeFraction(posPx: number) {
+    const relPos = posPx - this.totalOffset / 2;
+    return relPos / this.maxSpaceAvailable;
   }
 
   private readonly onClick = (evt: PointerEvent): void => {
@@ -230,15 +278,13 @@ export class InteractionManager {
   };
 
   private readonly onWheel = (evt: WheelEvent): void => {
-    if (!this.canMoveWheel(evt)) {
-      return;
+    const direction = getDirectionOfTravelFromWheel(evt);
+
+    if (this.isWithinBounds(direction)) {
+      const posPercentage = this._position() / this.lineSegment;
+      const newPosPercentage = posPercentage - direction / 100;
+      this.moveByFraction(newPosPercentage);
     }
-
-    const wheelDistance = normalizeWheelDistance(evt);
-    const currPosPct = this._position() / this.lineSegment;
-    const newPosPct = currPosPct - wheelDistance / 100;
-
-    this.moveByFraction(newPosPct);
   };
 
   private readonly onMousemove = (evt: MouseEvent): void => {
@@ -266,12 +312,11 @@ export class InteractionManager {
     this._cursorPos.set(this.clamp(point));
   }
 
-  private canMoveWheel(evt: WheelEvent) {
+  private isWithinBounds(directionOfTravel: DirectionOfTravel) {
     const pos = this._position();
-    const wheelDistance = normalizeWheelDistance(evt);
-
-    const canMoveBackwards = wheelDistance > 0 && pos > this.lowerBound;
-    const canMoveForward = wheelDistance < 0 && pos < this.upperBound;
+    const canMoveBackwards =
+      directionOfTravel === DirectionOfTravel.Forward && pos > this.lowerBound;
+    const canMoveForward = DirectionOfTravel.Backwards && pos < this.upperBound;
 
     return canMoveForward || canMoveBackwards;
   }
@@ -283,7 +328,7 @@ export class InteractionManager {
    * the defined range [offsetStart, distance - offsetEnd].
    *
    * If the position is less than {@link InteractionManager.lowerBound}, it is clamped to that.
-   * If it is greater than `{@link InteractionManager.lineSegment} - {@link InteractionManager.lowerBound}`,
+   * If it is greater than {@link InteractionManager.lineSegment} - {@link InteractionManager.lowerBound},
    * it is clamped to {@link InteractionManager.lowerBound}.
    *
    * @param point - The position to be clamped, specified as either an Area2d object or a number.
@@ -296,9 +341,6 @@ export class InteractionManager {
     const mainAxisPos = getMainAxisPosition(orientation, point);
 
     // Clamp the position within the defined range [offsetStart, distance - offsetEnd].
-    const pos = clamp(mainAxisPos, distance, offsetStart, offsetEnd);
-
-    // Round the position to two decimal places.
-    return round(pos, 2);
+    return clamp(mainAxisPos, distance, offsetStart, offsetEnd);
   }
 }

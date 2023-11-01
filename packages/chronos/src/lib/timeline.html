@@ -1,5 +1,9 @@
 <div class="chron-timeline-viewport" chronViewport>
-  <div class="chron-timeline-records">
+  <div
+    class="chron-timeline-records"
+    [style.top.px]="layoutStartOffset"
+    [style.bottom.px]="layoutEndOffset"
+  >
     <ng-container *ngFor="let segment of layout?.segments">
       <div class="chron-timeline-record" [style.transform]="segment.startMonth.transform">
         <div class="date">{{ segment.startMonth.timestamp | date:"yyyy" }}</div>

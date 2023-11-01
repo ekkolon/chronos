@@ -65,7 +65,8 @@ describe('InteractionManager', () => {
   describe('Event Handling', () => {
     it('should handle wheel events within the container', () => {
       // Simulate a wheel event.
-      const event = new WheelEvent('wheel');
+      const firefoxEvent = { detail: 9 };
+      const event = new WheelEvent('wheel', firefoxEvent);
       interactionManager['onWheel'](event);
 
       // Verify that the position is updated.

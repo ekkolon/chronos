@@ -9,7 +9,7 @@ import {
   is3DTranslatable,
   isArea2d,
   isOrientation,
-  normalizeWheelDistance,
+  getDirectionOfTravelFromWheel,
 } from './position';
 
 /**
@@ -150,17 +150,17 @@ describe('utils:position:generateTranslate3dProperty', () => {
 describe('utils:position:normalizeWheelDistance', () => {
   it('should normalize wheel distance for Firefox', () => {
     const firefoxEvent = { detail: 9 };
-    expect(normalizeWheelDistance(firefoxEvent as never)).toBe(-3);
+    expect(getDirectionOfTravelFromWheel(firefoxEvent as never)).toBe(-3);
   });
 
   it('should normalize wheel distance for other browsers', () => {
     const otherBrowserEvent = { wheelDelta: 240 };
-    expect(normalizeWheelDistance(otherBrowserEvent as never)).toBe(2);
+    expect(getDirectionOfTravelFromWheel(otherBrowserEvent as never)).toBe(2);
   });
 
   it('should return NaN for events without wheel details', () => {
     const eventWithoutDetails = {};
-    expect(normalizeWheelDistance(eventWithoutDetails as never)).toBe(NaN);
+    expect(getDirectionOfTravelFromWheel(eventWithoutDetails as never)).toBe(NaN);
   });
 });
 
