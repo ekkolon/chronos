@@ -186,6 +186,12 @@ export class InteractionManager {
     return this.config.offsetStart;
   }
 
+  get totalOffset() {
+    const { offsetEnd, offsetStart } = this.config;
+    return offsetStart + offsetEnd;
+  }
+
+
   /**
    * Starts detecting movements based on configured observables.
    */
