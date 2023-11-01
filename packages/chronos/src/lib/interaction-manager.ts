@@ -191,6 +191,9 @@ export class InteractionManager {
     return offsetStart + offsetEnd;
   }
 
+  get maxSpaceAvailable() {
+    return this.lineSegment - this.totalOffset;
+  }
 
   /**
    * Starts detecting movements based on configured observables.
