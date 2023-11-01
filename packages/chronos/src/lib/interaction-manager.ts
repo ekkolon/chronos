@@ -232,6 +232,11 @@ export class InteractionManager {
     this.destroyed.next();
   }
 
+  private calcRelativeFraction(posPx: number) {
+    const relPos = posPx - this.totalOffset / 2;
+    return relPos / this.maxSpaceAvailable;
+  }
+
   private readonly onClick = (evt: PointerEvent): void => {
     const coords = getRelativePosition(evt, this.containerEl);
     const pos = this.clamp(coords);
