@@ -6,7 +6,7 @@
  * found in the LICENSE file at the root of this project.
  */
 
-import { computed, signal } from '@angular/core';
+import { EventEmitter, computed, signal } from '@angular/core';
 
 import { Observable, Subject, fromEvent, merge, mergeMap, repeat, takeUntil, tap } from 'rxjs';
 
@@ -73,6 +73,9 @@ export class InteractionManager {
 
   /** A computed property that provides read-only access to the current position state. */
   readonly positionPct = computed(() => this.calcRelativeFraction(this._position()));
+
+  /** A computed property that provides read-only access to the current position state. */
+  readonly positionChanged = new EventEmitter<number>();
 
   /** A signal that holds the movement detector's current trackbar position in pixels. */
   private readonly _cursorPos = signal<number>(0);
