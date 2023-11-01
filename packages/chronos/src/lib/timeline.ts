@@ -181,6 +181,13 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
     });
 
     runInInjectionContext(this.injector, () => {
+      this.interactionManager.positionChanged
+        .pipe(
+          tap((pos) => this.positionChanged.emit(pos)),
+          takeUntilDestroyed()
+        )
+        .subscribe();
+
       this.currentPosition = computed(() => {
         const pos = this.interactionManager.position();
         return this.calcFinalPos(pos);
