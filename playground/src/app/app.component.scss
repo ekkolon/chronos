@@ -1,0 +1,43 @@
+:host {
+  display: flex;
+  min-height: 100vh;
+  height: 100%;
+  overflow-y: scroll;
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+
+  &::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
+
+  main {
+    flex: 1;
+  }
+
+  .segment {
+    position: relative;
+
+    .segment__header {
+      position: absolute;
+      height: 40px;
+      top: 4px;
+      display: flex;
+      align-items: center;
+      z-index: 100;
+
+      .timestamp {
+        font-size: 15px;
+        font-weight: 400;
+      }
+    }
+
+    .segment__records {
+      position: relative;
+
+      .box {
+        position: absolute;
+        background: rgb(228, 235, 240);
+      }
+    }
+  }
+}

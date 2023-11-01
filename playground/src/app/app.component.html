@@ -1,4 +1,30 @@
 <ngx-chronos-timeline
-  [records]="timelineRecords()"
+  [records]="timelineRecords"
   [position]="timelinePosition()"
+  (positionChanged)="onPositionChanged($event)"
 ></ngx-chronos-timeline>
+
+<main #content>
+  <ng-container *ngFor="let segment of segments">
+    <section class="segment">
+      <header
+        class="segment__header"
+        [style.left.px]="layoutContainerPadding.left"
+        [style.right.px]="layoutContainerPadding.right"
+      >
+        <h3 class="timestamp">{{ segment.timestamp | date : 'longDate' }}</h3>
+      </header>
+      <div class="segment__records" [style.height.px]="segment.containerHeight">
+        <ng-container *ngFor="let box of segment.boxes">
+          <div
+            class="box"
+            [style.width.px]="box.width"
+            [style.height.px]="box.height"
+            [style.top.px]="box.top"
+            [style.left.px]="box.left"
+          ></div>
+        </ng-container>
+      </div>
+    </section>
+  </ng-container>
+</main>
