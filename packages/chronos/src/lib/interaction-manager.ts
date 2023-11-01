@@ -221,14 +221,14 @@ export class InteractionManager {
     this._position.set(pos);
   }
 
-  updateConfig(config: InteractionManagerUpdateConfig) {
+  updateConfig(config: InteractionManagerUpdateConfig): void {
     this.config = {
       ...this.config,
       ...config,
     };
   }
 
-  detach() {
+  detach(): void {
     this.destroyed.next();
   }
 
