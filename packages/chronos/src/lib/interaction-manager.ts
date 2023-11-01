@@ -283,7 +283,7 @@ export class InteractionManager {
    * the defined range [offsetStart, distance - offsetEnd].
    *
    * If the position is less than {@link InteractionManager.lowerBound}, it is clamped to that.
-   * If it is greater than `{@link InteractionManager.lineSegment} - {@link InteractionManager.lowerBound}`,
+   * If it is greater than {@link InteractionManager.lineSegment} - {@link InteractionManager.lowerBound},
    * it is clamped to {@link InteractionManager.lowerBound}.
    *
    * @param point - The position to be clamped, specified as either an Area2d object or a number.
