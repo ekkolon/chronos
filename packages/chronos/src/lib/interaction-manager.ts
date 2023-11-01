@@ -12,7 +12,6 @@ import { Observable, Subject, fromEvent, merge, mergeMap, repeat, takeUntil, tap
 
 import { ElementOrRef, coerceElement } from './utils/coercion';
 import { animationFrameScheduledEvent } from './utils/events';
-import { round } from './utils/math';
 import {
   Area2d,
   DirectionOfTravel,
@@ -52,6 +51,12 @@ export interface InteractionManagerConfig extends InteractionManagerGeometry {
  */
 export interface InteractionManagerUpdateConfig extends InteractionManagerGeometry {
   distance?: number;
+}
+
+// Available distance units for moving along the main axis within a timeline.
+enum DistanceUnit {
+  Percentage,
+  Pixel,
 }
 
 /**
@@ -216,15 +221,12 @@ export class InteractionManager {
       .subscribe();
   }
 
-  moveByFraction(fraction: number) {
-    const rounded = round(this.config.distance * fraction, 2);
-    const pos = this.clamp(rounded);
-    this._position.set(pos);
+  moveByFraction(distance: number): void {
+    this.updatePositionByDistanceUnit(DistanceUnit.Percentage, distance);
   }
 
-  moveByPixels(positionInPixels: number) {
-    const pos = this.clamp(positionInPixels);
-    this._position.set(pos);
+  moveByPixels(distance: number): void {
+    this.updatePositionByDistanceUnit(DistanceUnit.Pixel, distance);
   }
 
   updateConfig(config: InteractionManagerUpdateConfig): void {
@@ -236,6 +238,31 @@ export class InteractionManager {
 
   detach(): void {
     this.destroyed.next();
+  }
+
+  private updatePositionByDistanceUnit(unit: DistanceUnit, distance: number) {
+    let distanceInPixels: number;
+
+    if (unit === DistanceUnit.Percentage) {
+      distanceInPixels = this.lineSegment * distance;
+    } else if (unit === DistanceUnit.Pixel) {
+      distanceInPixels = distance;
+    } else {
+      throw new Error(`Invalid distance unit "${unit}"`);
+    }
+
+    // We clamp the position here based on the assumption that
+    // `InteractionManager.moveByFraction` or `InteractionManager.moveByPixels`
+    // may be called independently of any DOM event subscribed to by this class.
+    //
+    // For instance, a parent component might manually call this method
+    // to move to a specific position on the screen and if we relied on
+    // the caller to provide a clamped position (that is, a position value that
+    // accounts for offset values to calculate the `this.maxSpaceAvailable`)
+    // we would inaccurately calculate layout geometries.
+    const finalPosition = this.clamp(distanceInPixels);
+
+    this._position.set(finalPosition);
   }
 
   private calcRelativeFraction(posPx: number) {
