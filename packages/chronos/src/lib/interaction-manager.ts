@@ -71,6 +71,9 @@ export class InteractionManager {
   /** A computed property that provides read-only access to the current position state. */
   readonly position = computed(() => this.clamp(this._position()));
 
+  /** A computed property that provides read-only access to the current position state. */
+  readonly positionPct = computed(() => this.calcRelativeFraction(this._position()));
+
   /** A signal that holds the movement detector's current trackbar position in pixels. */
   private readonly _cursorPos = signal<number>(0);
 
