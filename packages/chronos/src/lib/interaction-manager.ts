@@ -296,9 +296,6 @@ export class InteractionManager {
     const mainAxisPos = getMainAxisPosition(orientation, point);
 
     // Clamp the position within the defined range [offsetStart, distance - offsetEnd].
-    const pos = clamp(mainAxisPos, distance, offsetStart, offsetEnd);
-
-    // Round the position to two decimal places.
-    return round(pos, 2);
+    return clamp(mainAxisPos, distance, offsetStart, offsetEnd);
   }
 }
