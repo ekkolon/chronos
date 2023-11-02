@@ -8,6 +8,7 @@
 
 import { DatePipe, NgFor, NgIf, formatDate } from '@angular/common';
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -70,7 +71,7 @@ import { Orientation } from './utils/position';
     '[attr.orientation]': 'this.orientation',
   },
 })
-export class NgxChronosTimeline implements OnInit, OnDestroy {
+export class NgxChronosTimeline implements OnInit, OnDestroy, AfterViewInit {
   private readonly injector = inject(Injector);
   private readonly elementRef = inject(ElementRef) as ElementRef<HTMLElement>;
 
@@ -219,6 +220,18 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
     // Observe idle changes
     this.idle?.observe();
 
+    this.interactionManager.observe();
+  }
+
+  ngAfterViewInit(): void {
+    this.detectCursorVisibilityChanges();
+  }
+
+  ngOnDestroy(): void {
+    this.interactionManager.detach();
+  }
+
+  private detectCursorVisibilityChanges() {
     // Update cursor trackbar visibility based on mousevents
     const cursorVisibility$ = merge(
       this.interactionManager.mousemove$.pipe(tap(() => this.isCursorVisible.set(true))),
@@ -226,12 +239,6 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
     );
 
     cursorVisibility$.subscribe();
-
-    this.interactionManager.observe();
-  }
-
-  ngOnDestroy(): void {
-    this.interactionManager.detach();
   }
 
   private updateLineSegment() {
