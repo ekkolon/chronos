@@ -102,7 +102,7 @@ export class NgxChronosTimeline implements OnInit, OnDestroy, AfterViewInit {
   /**
    * A signal that indicates whether the cursor is visible on the timeline.
    */
-  isCursorVisible = signal(true);
+  isCursorVisible = signal(false);
 
   /**
    * The position of the cursor trackbar within the timeline in pixel.
