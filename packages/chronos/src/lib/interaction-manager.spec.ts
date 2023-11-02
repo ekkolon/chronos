@@ -39,7 +39,7 @@ describe('InteractionManager', () => {
     it('should start detecting movements', () => {
       // Use spies to verify that subscriptions are called.
       const spySubscribe = jest.spyOn(interactionManager['click$'], 'subscribe');
-      interactionManager.detectInteractions();
+      interactionManager.observe();
       expect(spySubscribe).toHaveBeenCalled();
     });
 

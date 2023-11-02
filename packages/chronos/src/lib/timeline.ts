@@ -227,7 +227,7 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
 
     cursorVisibility$.subscribe();
 
-    this.interactionManager.detectInteractions();
+    this.interactionManager.observe();
   }
 
   ngOnDestroy(): void {

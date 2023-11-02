@@ -209,7 +209,7 @@ export class InteractionManager {
   /**
    * Starts detecting movements based on configured observables.
    */
-  detectInteractions() {
+  observe() {
     merge(
       this.click$,
       this.wheel$,
