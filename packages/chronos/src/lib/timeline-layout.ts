@@ -74,9 +74,12 @@ export type TimelineYearSegment = {
  * Configuration options for the {@link TimelineLayout} class.
  */
 export interface TimelineLayoutConfig {
-  maxSpaceAvailable: number; // The maximum space available for the layout.
+  lineSegment: number; // The maximum space available for the layout.
   segments: TimelineSegmentBase[]; // An array of timeline segments.
   orientation: Orientation; // The orientation of the layout (e.g., 'horizontal' or 'vertical').
+  startOffset: number;
+  endOffset: number;
+  delimiterWidth: number;
 }
 
 /**
@@ -131,7 +134,7 @@ export class TimelineLayout {
       }
 
       if (index === numSnapshots - 1) {
-        upperBound = this.config.maxSpaceAvailable;
+        upperBound = this.config.lineSegment;
       }
 
       return inRange(position, itemPosition, upperBound);
@@ -140,30 +143,39 @@ export class TimelineLayout {
     return snapshotInRange;
   }
 
-  private computeLayout() {
-    const { maxSpaceAvailable, segments: records, orientation } = this.config;
-    const totalNumRecords = this.numRecords;
+  private get maxSpaceAvailable() {
+    return this.config.lineSegment - this.config.startOffset - this.config.endOffset;
+  }
 
-    const segments: TimelineSegment[] = [];
+  private get delimiterRadius() {
+    return this.config.delimiterWidth / 2;
+  }
+
+  private computeLayout() {
+    const { segments } = this.config;
+
+    const _segments: TimelineSegment[] = [];
 
     let startYear: number;
     let startPosition = 0;
 
-    records.forEach((snapshot, idx) => {
-      const fragment = { ...snapshot } as Partial<TimelineSegment>;
-      fragment.transform = getTranslate3d(orientation, startPosition);
+    segments.forEach((segment, idx) => {
+      const fragment = { ...segment } as Partial<TimelineSegment>;
       fragment.startPosition = startPosition;
-      fragment.fraction = snapshot.numRecords / totalNumRecords;
+      fragment.transform = this.getTranslate3d(startPosition);
+      fragment.fraction = this.calcFraction(segment.numRecords);
 
       const fragmentYear = (fragment.timestamp as Date).getFullYear();
       fragment.isYear = !(fragmentYear === startYear);
-
-      segments[idx] = fragment as TimelineSegment;
-      startPosition += maxSpaceAvailable * fragment.fraction;
       startYear = fragmentYear;
+
+      _segments[idx] = fragment as TimelineSegment;
+
+      startPosition += this.maxSpaceAvailable * fragment.fraction;
+      startPosition += this.delimiterRadius;
     });
 
-    this._segments = this.splitIntoYearSegments(segments);
+    this._segments = this.splitIntoYearSegments(_segments);
   }
 
   private splitIntoYearSegments(segments: TimelineSegment[]) {
@@ -185,6 +197,14 @@ export class TimelineLayout {
     }
 
     return yearSegments;
+  }
+
+  private getTranslate3d(startPosition: number) {
+    return getTranslate3d(this.config.orientation, startPosition - this.delimiterRadius);
+  }
+
+  private calcFraction(recordsCount: number) {
+    return recordsCount / this.numRecords;
   }
 }
 

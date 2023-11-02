@@ -162,6 +162,7 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
   // TODO: Determine style bindings based on timeline orientation
   layoutStartOffset = 24;
   layoutEndOffset = 24;
+  segmentDelimiterWidth = 6;
 
   ngOnInit() {
     // Compute and update line segment
@@ -175,9 +176,12 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
     });
 
     this.layout = new TimelineLayout({
-      maxSpaceAvailable: this.calcLayoutLineSegment(),
-      orientation: this.config.orientation,
+      lineSegment: this.calcLayoutLineSegment(),
+      orientation: this.orientation,
       segments: this.records,
+      endOffset: this.layoutEndOffset,
+      startOffset: this.layoutStartOffset,
+      delimiterWidth: this.segmentDelimiterWidth,
     });
 
     runInInjectionContext(this.injector, () => {

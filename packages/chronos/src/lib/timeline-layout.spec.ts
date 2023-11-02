@@ -75,9 +75,12 @@ describe('TimelineLayout', () => {
     ];
 
     config = {
-      maxSpaceAvailable: 1000,
+      lineSegment: 1000,
       segments: sampleSegments,
       orientation: 'vertical' as never,
+      delimiterWidth: 6,
+      endOffset: 24,
+      startOffset: 24,
     };
   });
 
