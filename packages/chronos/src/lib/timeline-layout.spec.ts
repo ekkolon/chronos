@@ -33,10 +33,11 @@ describe('groupByYear', () => {
       timestamp: '2023-11-25',
       numRecords: 10,
       label: 'November 2023',
-      startPosition: 0,
+      startAt: 0,
       transform: 'translate3d(0, 0, 0)',
       fraction: 0.5,
       isYear: false,
+      endAt: 1000,
     };
 
     const yearString = groupByYear(segment);
@@ -81,6 +82,7 @@ describe('TimelineLayout', () => {
       delimiterWidth: 6,
       endOffset: 24,
       startOffset: 24,
+      labelSpacing: 20,
     };
   });
 
@@ -94,17 +96,17 @@ describe('TimelineLayout', () => {
     const selectedSegment = timelineLayout.selectSegmentInRange(300);
 
     expect(selectedSegment).not.toBeNull();
-    expect(selectedSegment?.numRecords).toBe(5); // Check if it's one of the sample segments
+    expect(selectedSegment?.numRecords).toBe(8); // Check if it's one of the sample segments
   });
 
   it('should group segments into year segments', () => {
     const timelineLayout = new TimelineLayout(config);
-    const yearSegments: TimelineYearSegment[] = timelineLayout.segments;
+    const yearSegments: TimelineYearSegment[] = timelineLayout.segmentGroups;
 
     // Three different years
     expect(yearSegments.length).toBe(3);
-    expect(yearSegments[0].year).toBe(2022);
+    expect(yearSegments[2].year).toBe(2022);
     expect(yearSegments[1].year).toBe(2023);
-    expect(yearSegments[2].year).toBe(2024);
+    expect(yearSegments[0].year).toBe(2024);
   });
 });

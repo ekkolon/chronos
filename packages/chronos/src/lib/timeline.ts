@@ -164,6 +164,7 @@ export class NgxChronosTimeline implements OnInit, OnDestroy, AfterViewInit {
   layoutStartOffset = 24;
   layoutEndOffset = 24;
   segmentDelimiterWidth = 6;
+  segmentGroupLabelSpacing = 20;
 
   ngOnInit() {
     // Compute and update line segment
@@ -177,12 +178,13 @@ export class NgxChronosTimeline implements OnInit, OnDestroy, AfterViewInit {
     });
 
     this.layout = new TimelineLayout({
-      lineSegment: this.calcLayoutLineSegment(),
+      lineSegment: this.lineSegment(),
       orientation: this.orientation,
       segments: this.records,
       endOffset: this.layoutEndOffset,
       startOffset: this.layoutStartOffset,
       delimiterWidth: this.segmentDelimiterWidth,
+      labelSpacing: this.segmentGroupLabelSpacing,
     });
 
     runInInjectionContext(this.injector, () => {
