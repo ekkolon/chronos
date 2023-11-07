@@ -8,6 +8,7 @@
 
 import { DatePipe, NgFor, NgIf, formatDate } from '@angular/common';
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -71,7 +72,7 @@ import { Orientation } from './utils/position';
     '[attr.orientation]': 'this.orientation',
   },
 })
-export class NgxChronosTimeline implements OnInit, OnDestroy {
+export class NgxChronosTimeline implements OnInit, OnDestroy, AfterViewInit {
   private readonly injector = inject(Injector);
   private readonly elementRef = inject(ElementRef) as ElementRef<HTMLElement>;
 
@@ -102,7 +103,7 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
   /**
    * A signal that indicates whether the cursor is visible on the timeline.
    */
-  isCursorVisible = signal(true);
+  isCursorVisible = signal(false);
 
   /**
    * The position of the cursor trackbar within the timeline in pixel.
@@ -163,6 +164,8 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
   // TODO: Determine style bindings based on timeline orientation
   layoutStartOffset = 24;
   layoutEndOffset = 24;
+  segmentDelimiterWidth = 6;
+  segmentGroupLabelSpacing = 20;
 
   ngOnInit() {
     // Compute and update line segment
@@ -176,9 +179,13 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
     });
 
     this.layout = new TimelineLayout({
-      maxSpaceAvailable: this.calcLayoutLineSegment(),
-      orientation: this.config.orientation,
+      lineSegment: this.lineSegment(),
+      orientation: this.orientation,
       segments: this.records,
+      endOffset: this.layoutEndOffset,
+      startOffset: this.layoutStartOffset,
+      delimiterWidth: this.segmentDelimiterWidth,
+      labelSpacing: this.segmentGroupLabelSpacing,
     });
 
     runInInjectionContext(this.injector, () => {
@@ -223,6 +230,18 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
     // Observe idle changes
     this.idle?.observe();
 
+    this.interactionManager.observe();
+  }
+
+  ngAfterViewInit(): void {
+    this.detectCursorVisibilityChanges();
+  }
+
+  ngOnDestroy(): void {
+    this.interactionManager.detach();
+  }
+
+  private detectCursorVisibilityChanges() {
     // Update cursor trackbar visibility based on mousevents
     const cursorVisibility$ = merge(
       this.interactionManager.mousemove$.pipe(tap(() => this.isCursorVisible.set(true))),
@@ -230,12 +249,6 @@ export class NgxChronosTimeline implements OnInit, OnDestroy {
     );
 
     cursorVisibility$.subscribe();
-
-    this.interactionManager.detectInteractions();
-  }
-
-  ngOnDestroy(): void {
-    this.interactionManager.detach();
   }
 
   private updateLineSegment() {

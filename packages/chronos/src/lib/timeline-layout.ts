@@ -9,6 +9,8 @@
 import { inRange } from './utils/math';
 import { Orientation, getTranslate3d } from './utils/position';
 
+// TODO: Add jsdocs for public api
+
 export type Timestamp = string | number | Date;
 
 /**
@@ -34,6 +36,9 @@ export interface TimelineSegmentBase {
 
   /** The number of records in the segment */
   numRecords: number;
+
+  /** Indicates if the segment is a new year. */
+  isYear?: boolean;
 }
 
 /**
@@ -45,16 +50,16 @@ export interface TimelineSegment extends TimelineSegmentBase {
   label?: string;
 
   /** The position where the segment starts. */
-  startPosition: number;
+  startAt: number;
+
+  /** The position where the segment starts. */
+  endAt: number;
 
   /** The transformation data for the segment. */
   transform: string;
 
   /** The fraction of records compared to the total. */
   fraction: number;
-
-  /** Indicates if the segment is a new year. */
-  isYear: boolean;
 }
 
 export type TimelineYearSegments = TimelineYearSegment[];
@@ -64,40 +69,65 @@ export type TimelineYearSegment = {
   year: number;
 
   /** Array of segments within the year. */
-  records: TimelineSegment[];
+  segments: TimelineSegment[];
 
   /** The first segment of the year. */
-  startMonth: TimelineSegment;
+  first: TimelineSegment;
 };
 
 /**
  * Configuration options for the {@link TimelineLayout} class.
  */
 export interface TimelineLayoutConfig {
-  maxSpaceAvailable: number; // The maximum space available for the layout.
+  lineSegment: number; // The maximum space available for the layout.
   segments: TimelineSegmentBase[]; // An array of timeline segments.
   orientation: Orientation; // The orientation of the layout (e.g., 'horizontal' or 'vertical').
+  startOffset: number;
+  endOffset: number;
+  delimiterWidth: number;
+  labelSpacing: number;
 }
 
 /**
  * Manages the layout of timeline segments.
  */
 export class TimelineLayout {
-  private _segments!: TimelineYearSegments;
+  private _segments!: TimelineSegment[];
+
+  private _segmentGroups!: TimelineYearSegments;
+
+  private _numSegmentGroups!: number;
 
   /**
    * Creates a new instance of the TimelineLayout class.
    * @param config - Configuration options for the layout.
    */
   constructor(private config: TimelineLayoutConfig) {
-    this.computeLayout();
+    this.config.segments = groupAndSortByYear(this.config.segments)
+      .map((seg) => {
+        seg[seg.length - 1].isYear = true;
+        return seg;
+      })
+      .flat(1);
+
+    this._numSegmentGroups = this.config.segments.filter((s) => s.isYear).length;
+
+    this._segments = this.computeLayout();
+    this._segmentGroups = this.groupSegmentsByYear(this._segments);
+  }
+
+  /**
+   * Gets the array of timeline segments.
+   */
+  get segments() {
+    return this._segments;
   }
 
   /**
    * Gets the array of timeline year segments.
    */
-  get segments() {
-    return this._segments;
+  get segmentGroups() {
+    return this._segmentGroups;
   }
 
   /**
@@ -113,25 +143,22 @@ export class TimelineLayout {
    * @returns The selected timeline segment or undefined if not found.
    */
   selectSegmentInRange(position: number) {
-    const records = this._segments.reduce<TimelineSegment[]>(
-      (snaps, year) => [...snaps, year.startMonth, ...year.records],
-      []
-    );
+    const segments = this._segments;
+    const numSegments = segments.length;
 
-    const numSnapshots = records.length;
-    const snapshotInRange = records.find((snapshot, index) => {
-      const itemPosition = snapshot.startPosition;
+    const snapshotInRange = segments.find((snapshot, index) => {
+      const itemPosition = snapshot.startAt;
 
       let upperBound: number;
 
-      if (records[index + 1] && index !== numSnapshots - 1) {
-        upperBound = records[index + 1].startPosition;
+      if (segments[index + 1] && index !== numSegments - 1) {
+        upperBound = segments[index + 1].startAt;
       } else {
-        upperBound = records[numSnapshots - 1].startPosition;
+        upperBound = segments[numSegments - 1].startAt;
       }
 
-      if (index === numSnapshots - 1) {
-        upperBound = this.config.maxSpaceAvailable;
+      if (index === numSegments - 1) {
+        upperBound = this.maxSpaceAvailable;
       }
 
       return inRange(position, itemPosition, upperBound);
@@ -140,51 +167,84 @@ export class TimelineLayout {
     return snapshotInRange;
   }
 
-  private computeLayout() {
-    const { maxSpaceAvailable, segments: records, orientation } = this.config;
-    const totalNumRecords = this.numRecords;
-
-    const segments: TimelineSegment[] = [];
-
-    let startYear: number;
-    let startPosition = 0;
-
-    records.forEach((snapshot, idx) => {
-      const fragment = { ...snapshot } as Partial<TimelineSegment>;
-      fragment.transform = getTranslate3d(orientation, startPosition);
-      fragment.startPosition = startPosition;
-      fragment.fraction = snapshot.numRecords / totalNumRecords;
-
-      const fragmentYear = (fragment.timestamp as Date).getFullYear();
-      fragment.isYear = !(fragmentYear === startYear);
-
-      segments[idx] = fragment as TimelineSegment;
-      startPosition += maxSpaceAvailable * fragment.fraction;
-      startYear = fragmentYear;
-    });
-
-    this._segments = this.splitIntoYearSegments(segments);
+  private get maxSpaceAvailable() {
+    return this.config.lineSegment - this.config.startOffset - this.config.endOffset;
   }
 
-  private splitIntoYearSegments(segments: TimelineSegment[]) {
-    const segmentsMap = groupBy(segments, groupByYear);
+  private get delimiterRadius() {
+    return this.config.delimiterWidth / 2;
+  }
 
-    const yearSegments: TimelineYearSegments = [];
+  private get labelSpacing() {
+    return this.config.labelSpacing - this.delimiterRadius;
+  }
 
-    for (const year in segmentsMap) {
-      const yearSegment = segmentsMap[year];
-      const monthSegment = yearSegment.shift();
+  private computeLayout() {
+    const segments = this.config.segments;
 
-      if (monthSegment) {
-        yearSegments.push({
-          startMonth: monthSegment,
-          year: parseInt(year),
-          records: segmentsMap[year],
-        });
+    // The starting point from `top -> down` or `left -> right`, depending on the
+    // timeline's orientation setting, must be adjusted such that it takes the
+    // radius of it's delimiter into account. Since each segment is seperated by
+    // a circle, except segments that mark the start of a segment group
+    // (first month of each year), we need to start at the negative circle radius.
+    let startAt = -this.delimiterRadius;
+
+    // We account for the sum of radii of all segment delimiters, execpt those that
+    // mark the start of a segment group. This is because the start of a segment
+    // group is not displayed as a circle but as a text box containing the year
+    // of that segment group.
+    const maxSpaceAvailable =
+      this.maxSpaceAvailable - this.delimiterRadius * this._numSegmentGroups;
+
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
+      const fraction = this.calcFraction(seg.numRecords);
+      const occupiedSpace = maxSpaceAvailable * fraction;
+      const endAt = startAt + occupiedSpace;
+
+      let transform = endAt - this.delimiterRadius;
+      if (seg.isYear && i !== segments.length - 1) {
+        // Subtract the label spacing for this segment.
+        // We don't account for the last record within the layout because
+        // this is already done when calculating the `maxSpaceAvailable`.
+        transform = endAt - this.labelSpacing;
       }
+
+      segments[i] = {
+        ...seg,
+        fraction,
+        startAt,
+        endAt,
+        transform: this.getTranslate3d(transform),
+      } as TimelineSegment;
+
+      startAt = endAt;
     }
 
-    return yearSegments;
+    return segments as TimelineSegment[];
+  }
+
+  private groupSegmentsByYear(segments: TimelineSegment[]): TimelineYearSegments {
+    const segmentsMap = groupBy(segments, groupByYear);
+    return Object.keys(segmentsMap)
+      .map((year) => {
+        const segments = segmentsMap[year];
+        const first = segments.pop();
+        return {
+          first,
+          segments,
+          year: parseInt(year),
+        } as TimelineYearSegment;
+      })
+      .reverse();
+  }
+
+  private getTranslate3d(startPosition: number) {
+    return getTranslate3d(this.config.orientation, startPosition);
+  }
+
+  private calcFraction(recordsCount: number) {
+    return recordsCount / this.numRecords;
   }
 }
 
@@ -208,4 +268,31 @@ export function groupBy<T>(array: Array<T>, property: GroupByFn<T>): ArrayDict<T
     memo[property(x)].push(x);
     return memo;
   }, {});
+}
+
+function groupAndSortByYear(input: TimelineSegmentBase[]): TimelineSegmentBase[][] {
+  // Sort the input array in descending order by timestamp
+  const sortedInput = input.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+
+  const groupedData: Record<string, TimelineSegmentBase[]> = {};
+
+  // Group the sorted data by year
+  for (const item of sortedInput) {
+    const year = new Date(item.timestamp).getFullYear().toString();
+
+    if (!groupedData[year]) {
+      groupedData[year] = [];
+    }
+
+    groupedData[year].push(item);
+  }
+
+  // Convert the grouped data into a 2D array and sort it by year in descending order
+  const result: TimelineSegmentBase[][] = Object.entries(groupedData)
+    .sort((a, b) => parseInt(b[0], 10) - parseInt(a[0], 10))
+    .map((entry) => entry[1]);
+
+  return result;
 }

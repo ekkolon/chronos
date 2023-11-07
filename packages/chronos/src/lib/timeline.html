@@ -1,21 +1,22 @@
 <div class="chron-timeline-viewport" chronViewport>
   <div
-    class="chron-timeline-records"
     [style.top.px]="layoutStartOffset"
     [style.bottom.px]="layoutEndOffset"
+    class="chron-timeline-records"
   >
-    <ng-container *ngFor="let segment of layout?.segments">
-      <div class="chron-timeline-record" [style.transform]="segment.startMonth.transform">
-        <div class="date">{{ segment.startMonth.timestamp | date:"yyyy" }}</div>
-      </div>
+    <ng-container *ngFor="let group of layout?.segmentGroups">
       <div
-        *ngFor="let record of segment.records"
         class="chron-timeline-record"
-        [style.transform]="record.transform"
+        *ngFor="let segment of group.segments"
+        [style.transform]="segment.transform"
       >
         <div class="point">
           <div class="point-tracker"></div>
         </div>
+      </div>
+
+      <div class="chron-timeline-record" [style.transform]="group.first.transform">
+        <div class="date">{{ group.year }}</div>
       </div>
     </ng-container>
   </div>
